@@ -5,14 +5,14 @@ import tushare
 
 from settings import data_path
 
-# Step 1. Get stocks online
-stocks_raw_data = tushare.get_stock_basics()
-stocks = stocks_raw_data.index.tolist()
+tushare.set_token('1e431dd1d92959eeec4ef91f58a3ec1f85b5b242d32f1c3a2b00df08')
+pro = tushare.pro_api()
 
-# Step 2. Save the stocks list to a local file
+data = pro.stock_basic(exchange='', list_status='L',
+                       fields='ts_code,symbol,name,area,industry,fullname,enname,market,exchange,curr_type,'
+                              'list_status,list_date,delist_date,is_hs')
+
 today = datetime.datetime.today().strftime('%Y%m%d')
-file = data_path+'/all_stock_list_'+today+'.csv'
-stocks_raw_data.to_csv(file)
+file = data_path+'/stock_basic/all_stock_list_'+today+'.csv'
+data.to_csv(file)
 print('Stocks saved.')
-
-
