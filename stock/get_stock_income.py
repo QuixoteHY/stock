@@ -9,21 +9,17 @@ import time
 import logging
 import csv
 
-import tushare
-
-from settings import data_path
+from settings import data_path, pro
 
 
-def get_the_stock_history_income(pro, ts_code, start_date='20050101', end_date='20190630', fields=''):
+def get_the_stock_history_income(_pro, ts_code, start_date='20050101', end_date='20190630', fields=''):
     # fields为空默认显示所有字段
-    df = pro.income(ts_code=ts_code, start_date=start_date, end_date=end_date, fields=fields)
+    df = _pro.income(ts_code=ts_code, start_date=start_date, end_date=end_date, fields=fields)
     file = data_path+'/income/income_'+end_date+'_'+ts_code+'.csv'
     df.to_csv(file)
 
 
 def run():
-    tushare.set_token('1e431dd1d92959eeec4ef91f58a3ec1f85b5b242d32f1c3a2b00df08')
-    pro = tushare.pro_api()
     date_str = '20190608'
     file = data_path + '/stock_basic/all_stock_list_' + date_str + '.csv'
     count = 0
@@ -43,4 +39,13 @@ def run():
 
 
 if __name__ == '__main__':
-    run()
+    # run()
+    get_the_stock_history_income(pro, '000001.SZ')
+    time.sleep(2)
+    get_the_stock_history_income(pro, '000988.SZ')
+    time.sleep(2)
+    get_the_stock_history_income(pro, '002129.SZ')
+    time.sleep(2)
+    get_the_stock_history_income(pro, '601010.SH')
+    time.sleep(2)
+    get_the_stock_history_income(pro, '601799.SH')

@@ -38,5 +38,27 @@ def run():
             time.sleep(2)
 
 
+def repair():
+    date_str = '20190608'
+    file = data_path + '/err_log/err_cashflow_' + date_str + '.log'
+    count = 0
+    with open(file, encoding='UTF-8') as f:
+        for line in f:
+            ts_code = line.strip()
+            if not ts_code:
+                continue
+            count += 1
+            try:
+                get_the_stock_history_cashflow(pro, ts_code)
+                print(str(count)+'\t', ts_code, '\t\t成功')
+            except Exception as e:
+                logging.info(logging.exception(e))
+                print(str(count)+'\t', ts_code, '\t\t失败')
+                with open(data_path + '/err_log/err_cashflow_20190609.log', 'a') as f_err:
+                    f_err.write(ts_code+'\n')
+            time.sleep(2)
+
+
 if __name__ == '__main__':
-    run()
+    # run()
+    repair()
