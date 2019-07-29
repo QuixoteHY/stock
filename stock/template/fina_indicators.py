@@ -30,8 +30,12 @@ def get_table_code(fina_indicators):
         tr_indicator = '<tr><td align=center>'+indicator_name+'</td>'
         temp_string = indicator_name+(20-len(indicator_name)*2)*' '+'\t'
         for year in year_list:
-            tr_indicator = tr_indicator+'<td>'+str(indicators[year])+'</td>'
-            temp_string = temp_string+str(indicators[year])+(10-len(str(indicators[year])))*' '
+            if year in indicators:
+                tr_indicator = tr_indicator+'<td>'+str(indicators[year])+'</td>'
+                temp_string = temp_string+str(indicators[year])+(10-len(str(indicators[year])))*' '
+            else:
+                tr_indicator = tr_indicator + '<td>--</td>'
+                temp_string = temp_string + '' + (10 - len('')) * ' '
         tr_indicator += '</tr>'
         table += tr_indicator
         print(temp_string)
