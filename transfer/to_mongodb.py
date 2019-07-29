@@ -40,8 +40,20 @@ def insert_to_mongodb(set1):
 
 # 创建主函数
 def main():
-    set1 = connection()
-    insert_to_mongodb(set1)
+    # set1 = connection()
+    # insert_to_mongodb(set1)
+    set1 = MongoClient("localhost").stock.test
+    set1.insert({
+   "_id" : 6,
+   "name" : "abc",
+   "age" : 43,
+   "type" : 1,
+   "status" : "A",
+   "favorites" : { "food" : "pizza", "artist" : "Picasso" },
+   "finished" : [ 18, 12 ],
+   "badges" : [ "black", "blue" ],
+   "points" : [ { "points" : 78, "bonus" : 8 }, { "points" : 57, "bonus" : 7 } ]
+})
 
 
 if __name__ == '__main__':

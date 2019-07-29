@@ -12,7 +12,7 @@ import csv
 from settings import data_path, pro
 from stock.utils import Utils
 from stock.template.fina_indicators import get_table_code
-from stock import fina_indicators_dict
+from stock import fina_indicators_dict, format_to_mongodb
 
 
 def calculate_cash_to_total_assets_rate(balancesheet):
@@ -242,7 +242,10 @@ def calculate(ts_code, conn_collection):
             net_interest_rate = calculate_net_interest_rate(row)
             fina_indicators['净利率'][row['end_date']] = Utils.get_rate(net_interest_rate)
     get_table_code(fina_indicators)
-    conn_collection.insert({ts_code.replace('.', '_'): fina_indicators})
+    conn_collection.insert_many(format_to_mongodb(fina_indicators, ts_code))
+    # db.fi.find({"ts_code": "000001_SZ"})
+    # db.fi.find({"ts_code": "000001_SZ", "indicator_code": "0015", "time": /201[87654]1231/i}, {"time": 1, "indicator_value": 1, "indicator_name": 1})
+    # db.fi.find({"ts_code": "000001_SZ", "indicator_code": "0015", "time": /20(1[876543210]|0[9])1231/i}, {"time": 1, "indicator_value": 1, "indicator_name": 1})
 
 
 def run():
