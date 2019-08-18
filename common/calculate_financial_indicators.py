@@ -11,9 +11,8 @@ import csv
 from common.constant import data_path
 from common.tushare_api import pro
 from common.utils import Utils
-from common.template.fina_indicators import get_table_code
-
-from stock import fina_indicators_dict
+from common.template.fina_indicators import get_html_table_code
+from common.data_model import fina_indicators_dict
 
 
 def calculate_cash_to_total_assets_rate(balancesheet):
@@ -243,7 +242,7 @@ def calculate(ts_code):
             # 净利率
             net_interest_rate = calculate_net_interest_rate(row)
             fina_indicators['净利率'][row['end_date']] = Utils.get_rate(net_interest_rate)
-    get_table_code(fina_indicators)
+    return get_html_table_code(fina_indicators)
 
 
 if __name__ == '__main__':

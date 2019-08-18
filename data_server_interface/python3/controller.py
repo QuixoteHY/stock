@@ -8,6 +8,7 @@
 import csv
 
 from common.constant import data_path
+from common.calculate_financial_indicators import calculate
 
 
 class Controller(object):
@@ -22,4 +23,4 @@ class Controller(object):
                 pass
 
     def get_fina_indicators(self, ts_code):
-        pass
+        return calculate(ts_code)

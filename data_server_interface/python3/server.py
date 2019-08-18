@@ -9,9 +9,10 @@ import asyncio
 
 from aiohttp import web
 
-from .logger import logger
-from .settings import SERVER_HOST, SERVER_PORT, HEARTBEAT_INTERVAL
-from .controller import Controller
+from common.logger import logger
+
+from data_server_interface.python3.settings import SERVER_HOST, SERVER_PORT, HEARTBEAT_INTERVAL
+from data_server_interface.python3.controller import Controller
 
 
 def _heartbeat(loop, interval):
@@ -42,7 +43,8 @@ class MainHandler:
                 self.controller.get_balance_sheet(ts_code)
                 return web.json_response({})
             elif financial_statement_type == 'fina_indicators':
-                return web.json_response(self.controller.get_fina_indicators(ts_code))
+                return web.Response(body=self.controller.get_fina_indicators(ts_code).encode('utf-8'),
+                                    content_type='text/html')
         except Exception as e:
             logger.info(logger.exception(e))
             return web.json_response({'status': 'error in server'})
