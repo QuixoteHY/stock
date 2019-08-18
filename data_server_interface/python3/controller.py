@@ -5,6 +5,7 @@
 # @Email    : 1290482442@qq.com
 # @Describe :
 
+import os
 import csv
 
 from common.constant import data_path
@@ -23,4 +24,10 @@ class Controller(object):
                 pass
 
     def get_fina_indicators(self, ts_code):
-        return calculate(ts_code)
+        _ts_code = ts_code+'.SZ'
+        if os.path.exists(self.balance_sheet_data_path_model % _ts_code):
+            return calculate(_ts_code)
+        _ts_code = ts_code+'.SH'
+        if os.path.exists(self.balance_sheet_data_path_model % _ts_code):
+            return calculate(_ts_code)
+        return 'The ts_code no data, or error in your ts_code'

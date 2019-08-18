@@ -5,8 +5,6 @@
 # @Email    : 1290482442@qq.com
 # @Describe : Calculating financial indicators
 
-from common.constant import data_path
-
 
 def get_html_table_code(fina_indicators):
     html = """
@@ -39,6 +37,4 @@ def get_html_table_code(fina_indicators):
         tr_indicator += '</tr>'
         table += tr_indicator
         print(temp_string)
-    # with open(data_path+'/test_data/test.html', 'w', encoding='utf-8') as f:
-    #     f.write(html % table)
     return html % table
