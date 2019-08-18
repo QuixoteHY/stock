@@ -1,3 +1,9 @@
+# -*- coding:utf-8 -*-
+# @Time     : 2019-06-08 22:44
+# @Author   : 胡远
+# @Github   : https://github.com/QuixoteHY
+# @Email    : 1290482442@qq.com
+# @Describe :
 
 fina_indicators_dict = {
     # 资产负债比率(占总资产%)

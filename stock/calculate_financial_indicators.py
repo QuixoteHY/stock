@@ -38,8 +38,8 @@ def calculate_inventory_rate(balancesheet):
     # 存货比率=存货/总资产*100%
     inventories = float(balancesheet['inventories'] if balancesheet['inventories'] else 0)
     total_assets = float(balancesheet['total_assets'] if balancesheet['total_assets'] else 0)
-    if not total_assets:
-        return 0
+    # if not total_assets:
+    #     return 0
     return inventories/total_assets
 
 
@@ -48,7 +48,8 @@ def calculate_liquidity_rate(balancesheet):
     total_cur_assets = float(balancesheet['total_cur_assets'] if balancesheet['total_cur_assets'] else 0)
     total_assets = float(balancesheet['total_assets'] if balancesheet['total_assets'] else 0)
     if not total_assets:
-        return 0
+        #     return 0
+        print(balancesheet)
     return total_cur_assets/total_assets
 
 
@@ -56,8 +57,8 @@ def calculate_accounts_payable_rate(balancesheet):
     # 应付账款比率=应付账款/总资产*100%
     acct_payable = float(balancesheet['acct_payable'] if balancesheet['acct_payable'] else 0)
     total_assets = float(balancesheet['total_assets'] if balancesheet['total_assets'] else 0)
-    if not total_assets:
-        return 0
+    # if not total_assets:
+    #     return 0
     return acct_payable/total_assets
 
 
@@ -186,6 +187,7 @@ def calculate(ts_code, conn_collection):
         # 资产负债表
         bs_reader = csv.DictReader(bsf)
         for row in bs_reader:
+            # print(row)
             # 资产负债比率(占总资产%)
             # 现金与约当现金比率
             cash_to_total_assets_rate = calculate_cash_to_total_assets_rate(row)
@@ -246,6 +248,7 @@ def calculate(ts_code, conn_collection):
     # db.fi.find({"ts_code": "000001_SZ"})
     # db.fi.find({"ts_code": "000001_SZ", "indicator_code": "0015", "time": /201[87654]1231/i}, {"time": 1, "indicator_value": 1, "indicator_name": 1})
     # db.fi.find({"ts_code": "000001_SZ", "indicator_code": "0015", "time": /20(1[876543210]|0[9])1231/i}, {"time": 1, "indicator_value": 1, "indicator_name": 1})
+    # db.fi.find({"ts_code": "000001_SZ", "indicator_code": "0015", "time": /20(1[876543210]|0[9])1231/i}, {"time": 1, "indicator_value": 1, "indicator_name": 1, "_id": 0})
 
 
 def run():
@@ -266,4 +269,6 @@ def run():
 
 
 if __name__ == '__main__':
-    run()
+    # run()
+    conn_collection = Utils.get_conn_fi()
+    calculate('002087.SZ', conn_collection)
