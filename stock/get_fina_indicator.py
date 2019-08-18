@@ -9,7 +9,8 @@ import time
 import logging
 import csv
 
-from settings import data_path, pro
+from common.constant import data_path
+from common.tushare_api import pro
 
 
 def get_the_stock_history_fina_indicator(_pro, ts_code, start_date='20050101', end_date='20190630', fields=''):

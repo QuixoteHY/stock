@@ -9,7 +9,7 @@ import datetime
 
 import tushare
 
-from settings import data_path
+from common.constant import data_path
 
 tushare.set_token('1e431dd1d92959eeec4ef91f58a3ec1f85b5b242d32f1c3a2b00df08')
 pro = tushare.pro_api()
