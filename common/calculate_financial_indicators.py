@@ -144,13 +144,13 @@ def calculate_quick_moving_rate(balancesheet):
     return (total_cur_assets-inventories-prepayment-amor_exp)/total_cur_liab
 
 
-def calculate_receivable_turnover_rate(balancesheet):
+def calculate_receivable_turnover_rate(balancesheet, income):
     # 应收账款周转率=营业收入/应收账款*100%
-    total_cur_assets = float(balancesheet['total_cur_assets'] if balancesheet['total_cur_assets'] else 0)
-    total_cur_liab = float(balancesheet['total_cur_liab'] if balancesheet['total_cur_liab'] else 0)
-    if not total_cur_liab:
+    total_cur_assets = float(income['revenue'] if income['revenue'] else 0)
+    accounts_receiv = float(balancesheet['accounts_receiv'] if balancesheet['accounts_receiv'] else 0)
+    if not accounts_receiv:
         return 0
-    return total_cur_assets/total_cur_liab
+    return total_cur_assets/accounts_receiv/100
 
 
 def calculate_net_interest_rate(income):
@@ -182,66 +182,84 @@ def calculate(ts_code):
     fina_indicators = copy.deepcopy(fina_indicators_dict)
     bs_file = data_path + '/balancesheet/balancesheet_20190630_%s.csv' % ts_code
     ic_file = data_path + '/income/income_20190630_%s.csv' % ts_code
+    cf_file = data_path + '/cashflow/cashflow_20190630_%s.csv' % ts_code
+    financial_statements = dict()
     with open(bs_file, newline='', encoding='UTF-8') as bsf:
         # 资产负债表
         bs_reader = csv.DictReader(bsf)
         for row in bs_reader:
-            # print(row)
-            # 资产负债比率(占总资产%)
-            # 现金与约当现金比率
-            cash_to_total_assets_rate = calculate_cash_to_total_assets_rate(row)
-            fina_indicators['现金与约当现金比率'][row['end_date']] = Utils.get_rate(cash_to_total_assets_rate)
-            # 应收账款比率
-            accounts_receivable_rate = calculate_accounts_receivable_rate(row)
-            fina_indicators['应收账款比率'][row['end_date']] = Utils.get_rate(accounts_receivable_rate)
-            # 存货比率
-            inventory_rate = calculate_inventory_rate(row)
-            fina_indicators['存货比率'][row['end_date']] = Utils.get_rate(inventory_rate)
-            # 流动资产比率
-            liquidity_rate = calculate_liquidity_rate(row)
-            fina_indicators['流动资产比率'][row['end_date']] = Utils.get_rate(liquidity_rate)
-            # 应付账款比率
-            total_accounts_payable_rate = calculate_accounts_payable_rate(row)
-            fina_indicators['应付账款比率'][row['end_date']] = Utils.get_rate(total_accounts_payable_rate)
-            # 流动负债比率
-            total_current_liability_rate = calculate_current_liability_rate(row)
-            fina_indicators['流动负债比率'][row['end_date']] = Utils.get_rate(total_current_liability_rate)
-            # 长期负债比率
-            total_long_term_debt_rate = calculate_long_term_debt_rate(row)
-            fina_indicators['长期负债比率'][row['end_date']] = Utils.get_rate(total_long_term_debt_rate)
-            # 股东权益比率
-            total_shareholder_equity_rate = calculate_shareholder_equity_rate(row)
-            fina_indicators['股东权益比率'][row['end_date']] = Utils.get_rate(total_shareholder_equity_rate)
-            # 资产负债表平衡
-            total_debt_shareholders_equity_rate = calculate_total_debt_shareholders_equity_rate(row)
-            fina_indicators['资产负债表平衡'][row['end_date']] = \
-                Utils.get_rate(total_debt_shareholders_equity_rate)
-            # 五大财务比率
-            # 五大财务比率--财务结构
-            # 负债占资产比率
-            total_debt_to_asset_rate = calculate_debt_to_asset_rate(row)
-            fina_indicators['负债占资产比率'][row['end_date']] = Utils.get_rate(total_debt_to_asset_rate)
-            # 长期资金占不动产/厂房及设备比率 = 长期资金占投资比率
-            long_term_capital_to_invest_rate = calculate_long_term_capital_to_invest_rate(row)
-            fina_indicators['长期资金占投资比率'][row['end_date']] = Utils.get_rate(long_term_capital_to_invest_rate)
-            # 五大财务比率--偿债能力
-            # 流动比率
-            liquidity_asset_to_liquidity_debt_rate = calculate_liquidity_asset_to_liquidity_debt_rate(row)
-            fina_indicators['流动比率'][row['end_date']] = Utils.get_rate(liquidity_asset_to_liquidity_debt_rate)
-            # 速动比率
-            quick_moving_rate = calculate_quick_moving_rate(row)
-            fina_indicators['速动比率'][row['end_date']] = Utils.get_rate(quick_moving_rate)
-            # 五大财务比率--经营能力
-            # 应收账款周转率
-            # receivable_turnover_rate = calculate_receivable_turnover_rate(row, row)
-            # fina_indicators['应收账款周转率'][row['end_date']] = Utils.get_rate(receivable_turnover_rate)
+            if row['end_date'] not in financial_statements:
+                financial_statements[row['end_date']] = dict()
+            financial_statements[row['end_date']]['balance_sheet'] = row
     with open(ic_file, newline='', encoding='UTF-8') as icf:
-        # 现金流量表
+        # 资产负债表
         ic_reader = csv.DictReader(icf)
         for row in ic_reader:
-            # 净利率
-            net_interest_rate = calculate_net_interest_rate(row)
-            fina_indicators['净利率'][row['end_date']] = Utils.get_rate(net_interest_rate)
+            if row['end_date'] not in financial_statements:
+                financial_statements[row['end_date']] = dict()
+            financial_statements[row['end_date']]['income'] = row
+    with open(cf_file, newline='', encoding='UTF-8') as cff:
+        # 资产负债表
+        cf_reader = csv.DictReader(cff)
+        for row in cf_reader:
+            if row['end_date'] not in financial_statements:
+                financial_statements[row['end_date']] = dict()
+            financial_statements[row['end_date']]['cash_flow'] = row
+    for end_date, data in financial_statements.items():
+        # 资产负债表
+        # 资产负债比率(占总资产%)
+        # 现金与约当现金比率
+        cash_to_total_assets_rate = calculate_cash_to_total_assets_rate(data['balance_sheet'])
+        fina_indicators['现金与约当现金比率'][end_date] = Utils.get_rate(cash_to_total_assets_rate)
+        # 应收账款比率
+        accounts_receivable_rate = calculate_accounts_receivable_rate(data['balance_sheet'])
+        fina_indicators['应收账款比率'][end_date] = Utils.get_rate(accounts_receivable_rate)
+        # 存货比率
+        inventory_rate = calculate_inventory_rate(data['balance_sheet'])
+        fina_indicators['存货比率'][end_date] = Utils.get_rate(inventory_rate)
+        # 流动资产比率
+        liquidity_rate = calculate_liquidity_rate(data['balance_sheet'])
+        fina_indicators['流动资产比率'][end_date] = Utils.get_rate(liquidity_rate)
+        # 应付账款比率
+        total_accounts_payable_rate = calculate_accounts_payable_rate(data['balance_sheet'])
+        fina_indicators['应付账款比率'][end_date] = Utils.get_rate(total_accounts_payable_rate)
+        # 流动负债比率
+        total_current_liability_rate = calculate_current_liability_rate(data['balance_sheet'])
+        fina_indicators['流动负债比率'][end_date] = Utils.get_rate(total_current_liability_rate)
+        # 长期负债比率
+        total_long_term_debt_rate = calculate_long_term_debt_rate(data['balance_sheet'])
+        fina_indicators['长期负债比率'][end_date] = Utils.get_rate(total_long_term_debt_rate)
+        # 股东权益比率
+        total_shareholder_equity_rate = calculate_shareholder_equity_rate(data['balance_sheet'])
+        fina_indicators['股东权益比率'][end_date] = Utils.get_rate(total_shareholder_equity_rate)
+        # 资产负债表平衡
+        total_debt_shareholders_equity_rate = calculate_total_debt_shareholders_equity_rate(data['balance_sheet'])
+        fina_indicators['资产负债表平衡'][end_date] = \
+            Utils.get_rate(total_debt_shareholders_equity_rate)
+        # 五大财务比率
+        # 五大财务比率--财务结构
+        # 负债占资产比率
+        total_debt_to_asset_rate = calculate_debt_to_asset_rate(data['balance_sheet'])
+        fina_indicators['负债占资产比率'][end_date] = Utils.get_rate(total_debt_to_asset_rate)
+        # 长期资金占不动产/厂房及设备比率 = 长期资金占投资比率
+        long_term_capital_to_invest_rate = calculate_long_term_capital_to_invest_rate(data['balance_sheet'])
+        fina_indicators['长期资金占投资比率'][end_date] = Utils.get_rate(long_term_capital_to_invest_rate)
+        # 五大财务比率--偿债能力
+        # 流动比率
+        liquidity_asset_to_liquidity_debt_rate = calculate_liquidity_asset_to_liquidity_debt_rate(data['balance_sheet'])
+        fina_indicators['流动比率'][end_date] = Utils.get_rate(liquidity_asset_to_liquidity_debt_rate)
+        # 速动比率
+        quick_moving_rate = calculate_quick_moving_rate(data['balance_sheet'])
+        fina_indicators['速动比率'][end_date] = Utils.get_rate(quick_moving_rate)
+        # 五大财务比率--经营能力
+        # 应收账款周转率
+        receivable_turnover_rate = calculate_receivable_turnover_rate(data['balance_sheet'], data['income'])
+        fina_indicators['应收账款周转率'][end_date] = Utils.get_rate(receivable_turnover_rate)
+        #
+        # 现金流量表
+        # 净利率
+        net_interest_rate = calculate_net_interest_rate(data['income'])
+        fina_indicators['净利率'][end_date] = Utils.get_rate(net_interest_rate)
     return get_html_table_code(fina_indicators)
 
 
