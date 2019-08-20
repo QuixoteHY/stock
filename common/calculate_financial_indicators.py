@@ -145,12 +145,91 @@ def calculate_quick_moving_rate(balancesheet):
 
 
 def calculate_receivable_turnover_rate(balancesheet, income):
-    # 应收账款周转率=营业收入/应收账款*100%
+    # 应收账款周转率(次)=营业收入/应收账款*100%
     total_cur_assets = float(income['revenue'] if income['revenue'] else 0)
     accounts_receiv = float(balancesheet['accounts_receiv'] if balancesheet['accounts_receiv'] else 0)
     if not accounts_receiv:
         return 0
     return total_cur_assets/accounts_receiv/100
+
+
+def calculate_ave_receivable_days(balancesheet, income):
+    # 平均收现日数=360/应收账款周转率=360/(营业收入/应收账款*100%)
+    total_cur_assets = float(income['revenue'] if income['revenue'] else 0)
+    accounts_receiv = float(balancesheet['accounts_receiv'] if balancesheet['accounts_receiv'] else 0)
+    if not accounts_receiv:
+        return 0
+    return 360/((total_cur_assets/accounts_receiv)*100)
+
+
+def calculate_inventory_turnover(balancesheet, income):
+    # 存货周转率(次)=营业成本/存货
+    total_cogs = float(income['total_cogs'] if income['total_cogs'] else 0)
+    inventories = float(balancesheet['inventories'] if balancesheet['inventories'] else 0)
+    if not inventories:
+        return 0
+    return (total_cogs/inventories)/100
+
+
+def calculate_ave_sale_days(balancesheet, income):
+    # 平均销货日数(平均在库天数)=360/存货周转率
+    total_cogs = float(income['total_cogs'] if income['total_cogs'] else 0)
+    inventories = float(balancesheet['inventories'] if balancesheet['inventories'] else 0)
+    if not inventories:
+        return 0
+    return 360/((total_cogs/inventories)*100)
+
+
+def calculate_fixed_invest_turnover_rate(balancesheet, income):
+    # 不动产/厂房及设备周转率 = 营业收入 / (固定资产 + 在建工程 + 工程物资)
+    total_cur_assets = float(income['revenue'] if income['revenue'] else 0)
+    fix_assets = float(balancesheet['fix_assets'] if balancesheet['fix_assets'] else 0)
+    cip = float(balancesheet['cip'] if balancesheet['cip'] else 0)
+    const_materials = float(balancesheet['const_materials'] if balancesheet['const_materials'] else 0)
+    fixed_invest = fix_assets+cip+const_materials
+    if fixed_invest:
+        return (total_cur_assets/fixed_invest)/100
+    return 0
+
+
+def calculate_total_assert_turnover_rate(balancesheet, income):
+    # 总资产周转率(次)=营业收入/总资产
+    total_cur_assets = float(income['revenue'] if income['revenue'] else 0)
+    total_assets = float(balancesheet['total_assets'] if balancesheet['total_assets'] else 0)
+    if total_assets:
+        return (total_cur_assets/total_assets)/100
+    return 0
+
+
+def calculate_roe(fina_indicator):
+    # 股东权益报酬率RoE=归属于母公司所有者的净利润/股东权益
+    if 'roe' not in fina_indicator:
+        return 0
+    return float(fina_indicator['roe'])/100
+
+
+def calculate_roa(fina_indicator):
+    # 总资产报酬率RoA=归属于母公司所有者的净利润/总资产
+    if 'roa' not in fina_indicator:
+        return 0
+    return float(fina_indicator['roa'])/100
+
+
+def calculate_operating_margin():
+    # 毛利=营业收入-营业成本
+    # 营业毛利率(%)=毛利率=毛利/营业收入
+    pass
+
+
+def calculate_business_interest_rate():
+    # 营业利益=营业收入-营业成本-营业费用
+    # 营业利益率(%)=营业利益 / 营业收入
+    pass
+
+
+def calculate_marginal_rate_of_operational_safety():
+    # 经营安全边际率(%) = 营业利益率/营业毛利率
+    pass
 
 
 def calculate_net_interest_rate(income):
@@ -183,28 +262,40 @@ def calculate(ts_code):
     bs_file = data_path + '/balancesheet/balancesheet_20190630_%s.csv' % ts_code
     ic_file = data_path + '/income/income_20190630_%s.csv' % ts_code
     cf_file = data_path + '/cashflow/cashflow_20190630_%s.csv' % ts_code
+    fi_file = data_path + '/fina_indicator/fina_indicator_20190630_%s.csv' % ts_code
     financial_statements = dict()
     with open(bs_file, newline='', encoding='UTF-8') as bsf:
         # 资产负债表
         bs_reader = csv.DictReader(bsf)
         for row in bs_reader:
             if row['end_date'] not in financial_statements:
-                financial_statements[row['end_date']] = dict()
+                financial_statements[row['end_date']] = {'balance_sheet': dict(), 'income': dict(),
+                                                         'cash_flow': dict(), 'fifi': dict(), }
             financial_statements[row['end_date']]['balance_sheet'] = row
     with open(ic_file, newline='', encoding='UTF-8') as icf:
-        # 资产负债表
+        # 利润表
         ic_reader = csv.DictReader(icf)
         for row in ic_reader:
             if row['end_date'] not in financial_statements:
-                financial_statements[row['end_date']] = dict()
+                financial_statements[row['end_date']] = {'balance_sheet': dict(), 'income': dict(),
+                                                         'cash_flow': dict(), 'fifi': dict(), }
             financial_statements[row['end_date']]['income'] = row
     with open(cf_file, newline='', encoding='UTF-8') as cff:
-        # 资产负债表
+        # 现金流量表
         cf_reader = csv.DictReader(cff)
         for row in cf_reader:
             if row['end_date'] not in financial_statements:
-                financial_statements[row['end_date']] = dict()
+                financial_statements[row['end_date']] = {'balance_sheet': dict(), 'income': dict(),
+                                                         'cash_flow': dict(), 'fifi': dict(), }
             financial_statements[row['end_date']]['cash_flow'] = row
+    with open(fi_file, newline='', encoding='UTF-8') as fif:
+        # 财务指标
+        fi_reader = csv.DictReader(fif)
+        for row in fi_reader:
+            if row['end_date'] not in financial_statements:
+                financial_statements[row['end_date']] = {'balance_sheet': dict(), 'income': dict(),
+                                                         'cash_flow': dict(), 'fifi': dict(), }
+            financial_statements[row['end_date']]['fifi'] = row
     for end_date, data in financial_statements.items():
         # 资产负债表
         # 资产负债比率(占总资产%)
@@ -252,9 +343,31 @@ def calculate(ts_code):
         quick_moving_rate = calculate_quick_moving_rate(data['balance_sheet'])
         fina_indicators['速动比率'][end_date] = Utils.get_rate(quick_moving_rate)
         # 五大财务比率--经营能力
-        # 应收账款周转率
+        # 应收账款周转率(次)
         receivable_turnover_rate = calculate_receivable_turnover_rate(data['balance_sheet'], data['income'])
-        fina_indicators['应收账款周转率'][end_date] = Utils.get_rate(receivable_turnover_rate)
+        fina_indicators['应收账款周转率(次)'][end_date] = Utils.get_rate(receivable_turnover_rate)
+        # 平均收现日数
+        ave_receive_days = calculate_ave_receivable_days(data['balance_sheet'], data['income'])
+        fina_indicators['平均收现日数'][end_date] = Utils.get_rate(ave_receive_days)
+        # 存货周转率(次)
+        inventory_turnover = calculate_inventory_turnover(data['balance_sheet'], data['income'])
+        fina_indicators['存货周转率(次)'][end_date] = Utils.get_rate(inventory_turnover)
+        # 平均销货日数(平均在库天数)
+        ave_sale_days = calculate_ave_sale_days(data['balance_sheet'], data['income'])
+        fina_indicators['平均销货日数(平均在库天数)'][end_date] = Utils.get_rate(ave_sale_days)
+        # 不动产/厂房及设备周转率
+        fixed_invest_turnover_rate = calculate_fixed_invest_turnover_rate(data['balance_sheet'], data['income'])
+        fina_indicators['不动产/厂房及设备周转率'][end_date] = Utils.get_rate(fixed_invest_turnover_rate)
+        # 总资产周转率(次)
+        total_assert_turnover_rate = calculate_total_assert_turnover_rate(data['balance_sheet'], data['income'])
+        fina_indicators['总资产周转率(次)'][end_date] = Utils.get_rate(total_assert_turnover_rate)
+        # 五大财务比率--获利能力
+        # 股东权益报酬率RoE
+        roe = calculate_roe(data['fifi'])
+        fina_indicators['股东权益报酬率RoE'][end_date] = Utils.get_rate(roe)
+        # 总资产报酬率RoA
+        roa = calculate_roa(data['fifi'])
+        fina_indicators['总资产报酬率RoA'][end_date] = Utils.get_rate(roa)
         #
         # 现金流量表
         # 净利率
