@@ -6,7 +6,6 @@
 # @Describe : Calculating financial indicators
 
 import copy
-import csv
 
 from common.constant import data_path
 from common.tushare_api import pro
@@ -180,51 +179,52 @@ def calculate_ave_sale_days(balancesheet, income):
     return 360/((total_cogs/inventories)*100)
 
 
-def calculate_fixed_invest_turnover_rate(balancesheet, income):
-    # 不动产/厂房及设备周转率 = 营业收入 / (固定资产 + 在建工程 + 工程物资)
-    total_cur_assets = float(income['revenue'] if income['revenue'] else 0)
-    fix_assets = float(balancesheet['fix_assets'] if balancesheet['fix_assets'] else 0)
-    cip = float(balancesheet['cip'] if balancesheet['cip'] else 0)
-    const_materials = float(balancesheet['const_materials'] if balancesheet['const_materials'] else 0)
-    fixed_invest = fix_assets+cip+const_materials
-    if fixed_invest:
-        return (total_cur_assets/fixed_invest)/100
-    return 0
+def calculate_fixed_invest_turnover_rate(fina_indicator):
+    # 固定资产周转率
+    fa_turn = float(fina_indicator['fa_turn'] if fina_indicator['fa_turn'] else 0)
+    if 'fa_turn' not in fina_indicator:
+        return 0
+    return float(fa_turn)
 
 
-def calculate_total_assert_turnover_rate(balancesheet, income):
-    # 总资产周转率(次)=营业收入/总资产
-    total_cur_assets = float(income['revenue'] if income['revenue'] else 0)
-    total_assets = float(balancesheet['total_assets'] if balancesheet['total_assets'] else 0)
-    if total_assets:
-        return (total_cur_assets/total_assets)/100
-    return 0
+def calculate_total_assert_turnover_rate(fina_indicator):
+    # 总资产周转率
+    assets_turn = float(fina_indicator['assets_turn'] if fina_indicator['assets_turn'] else 0)
+    if 'assets_turn' not in fina_indicator:
+        return 0
+    return float(assets_turn)
 
 
 def calculate_roe(fina_indicator):
-    # 股东权益报酬率RoE=归属于母公司所有者的净利润/股东权益
+    # 净资产收益率RoE
+    roe = float(fina_indicator['roe'] if fina_indicator['roe'] else 0)
     if 'roe' not in fina_indicator:
         return 0
-    return float(fina_indicator['roe'])/100
+    return float(roe)
 
 
 def calculate_roa(fina_indicator):
     # 总资产报酬率RoA=归属于母公司所有者的净利润/总资产
+    roe = float(fina_indicator['roa'] if fina_indicator['roa'] else 0)
     if 'roa' not in fina_indicator:
         return 0
-    return float(fina_indicator['roa'])/100
+    return float(roe)
 
 
-def calculate_operating_margin():
-    # 毛利=营业收入-营业成本
-    # 营业毛利率(%)=毛利率=毛利/营业收入
-    pass
+def calculate_operating_margin(fina_indicator):
+    # 销售毛利率
+    grossprofit_margin = float(fina_indicator['grossprofit_margin'] if fina_indicator['grossprofit_margin'] else 0)
+    if 'grossprofit_margin' not in fina_indicator:
+        return 0
+    return float(grossprofit_margin)
 
 
-def calculate_business_interest_rate():
-    # 营业利益=营业收入-营业成本-营业费用
-    # 营业利益率(%)=营业利益 / 营业收入
-    pass
+def calculate_business_interest_rate(fina_indicator):
+    # 销售净利率
+    netprofit_margin = float(fina_indicator['netprofit_margin'] if fina_indicator['netprofit_margin'] else 0)
+    if 'netprofit_margin' not in fina_indicator:
+        return 0
+    return float(netprofit_margin)
 
 
 def calculate_marginal_rate_of_operational_safety():
@@ -249,6 +249,47 @@ def calculate_net_interest_rate(income):
     if not revenue:
         return 0
     return (total_profit-income_tax)/revenue
+
+
+def calculate_eps(fina_indicator):
+    # 基本每股收益=每股盈余(元)
+    eps = float(fina_indicator['eps'] if fina_indicator['eps'] else 0)
+    if 'eps' not in fina_indicator:
+        return 0
+    return float(eps)
+
+
+def calculate_n_income(income):
+    # 税后净利(百万元)
+    n_income = float(income['n_income'] if income['n_income'] else 0)
+    return float(n_income)/1000000
+
+
+def calculate_cash_flow_rate(balancesheet, cash_flow):
+    # 现金流量比率=经营活动产生的现金流量净额/流动负债
+    n_cashflow_act = float(cash_flow['n_cashflow_act'] if cash_flow['n_cashflow_act'] else 0)
+    total_cur_liab = float(balancesheet['total_cur_liab'] if balancesheet['total_cur_liab'] else 0)
+    if not total_cur_liab:
+        return 0
+    return n_cashflow_act/total_cur_liab
+
+
+def calculate_cash_flow(cash_flow):
+    # 营业活动现金流量(百万元)=经营活动产生的现金流量净额
+    n_cashflow_act = float(cash_flow['n_cashflow_act'] if cash_flow['n_cashflow_act'] else 0)
+    return n_cashflow_act/1000000
+
+
+def calculate_invest_cash_flow(cash_flow):
+    # 投资活动现金流量(百万元)=投资活动产生的现金流量净额
+    n_cashflow_inv_act = float(cash_flow['n_cashflow_inv_act'] if cash_flow['n_cashflow_inv_act'] else 0)
+    return n_cashflow_inv_act/1000000
+
+
+def calculate_finance_cash_flow(cash_flow):
+    # 筹资活动现金流量(百万元)=筹资活动产生的现金流量净额
+    n_cash_flows_fnc_act = float(cash_flow['n_cash_flows_fnc_act'] if cash_flow['n_cash_flows_fnc_act'] else 0)
+    return n_cash_flows_fnc_act/1000000
 
 
 def get_fina_indicator():
@@ -322,24 +363,47 @@ def calculate(ts_code):
         # 平均销货日数(平均在库天数)
         ave_sale_days = calculate_ave_sale_days(data['balance_sheet'], data['income'])
         fina_indicators['平均销货日数(平均在库天数)'][end_date] = Utils.get_rate(ave_sale_days)
-        # 不动产/厂房及设备周转率
-        fixed_invest_turnover_rate = calculate_fixed_invest_turnover_rate(data['balance_sheet'], data['income'])
-        fina_indicators['不动产/厂房及设备周转率'][end_date] = Utils.get_rate(fixed_invest_turnover_rate)
+        # 固定资产周转率
+        fixed_invest_turnover_rate = calculate_fixed_invest_turnover_rate(data['fifi'])
+        fina_indicators['固定资产周转率'][end_date] = Utils.get_round(fixed_invest_turnover_rate)
         # 总资产周转率(次)
-        total_assert_turnover_rate = calculate_total_assert_turnover_rate(data['balance_sheet'], data['income'])
-        fina_indicators['总资产周转率(次)'][end_date] = Utils.get_rate(total_assert_turnover_rate)
+        total_assert_turnover_rate = calculate_total_assert_turnover_rate(data['fifi'])
+        fina_indicators['总资产周转率'][end_date] = Utils.get_round(total_assert_turnover_rate)
         # 五大财务比率--获利能力
-        # 股东权益报酬率RoE
+        # 净资产收益率RoE
         roe = calculate_roe(data['fifi'])
-        fina_indicators['股东权益报酬率RoE'][end_date] = Utils.get_rate(roe)
+        fina_indicators['净资产收益率RoE'][end_date] = Utils.get_round(roe)
         # 总资产报酬率RoA
         roa = calculate_roa(data['fifi'])
-        fina_indicators['总资产报酬率RoA'][end_date] = Utils.get_rate(roa)
-        #
-        # 现金流量表
-        # 净利率
+        fina_indicators['总资产报酬率RoA'][end_date] = Utils.get_round(roa)
+        # 销售毛利率
+        roe = calculate_operating_margin(data['fifi'])
+        fina_indicators['销售毛利率'][end_date] = Utils.get_round(roe)
+        # 销售净利率
+        roa = calculate_business_interest_rate(data['fifi'])
+        fina_indicators['销售净利率'][end_date] = Utils.get_round(roa)
+        # 净利率=纯益率
         net_interest_rate = calculate_net_interest_rate(data['income'])
         fina_indicators['净利率'][end_date] = Utils.get_rate(net_interest_rate)
+        # 基本每股收益=每股盈余(元)
+        surplus_rese_ps = calculate_eps(data['fifi'])
+        fina_indicators['基本每股收益'][end_date] = Utils.get_round(surplus_rese_ps)
+        # 税后净利(百万元)
+        n_income = calculate_n_income(data['income'])
+        fina_indicators['税后净利(百万元)'][end_date] = Utils.get_round(n_income)
+        # 五大财务比率--现金流量
+        # 现金流量比率
+        cash_flow_rate = calculate_cash_flow_rate(data['balance_sheet'], data['cash_flow'])
+        fina_indicators['现金流量比率'][end_date] = Utils.get_rate(cash_flow_rate)
+        # 营业活动现金流量(百万元)
+        cash_flow = calculate_cash_flow(data['cash_flow'])
+        fina_indicators['营业活动现金流量(百万元)'][end_date] = Utils.get_round(cash_flow)
+        # 投资活动现金流量(百万元)
+        invest_cash_flow = calculate_invest_cash_flow(data['cash_flow'])
+        fina_indicators['投资活动现金流量(百万元)'][end_date] = Utils.get_round(invest_cash_flow)
+        # 筹资活动现金流量(百万元)
+        finance_cash_flow = calculate_finance_cash_flow(data['cash_flow'])
+        fina_indicators['筹资活动现金流量(百万元)'][end_date] = Utils.get_round(finance_cash_flow)
     return get_html_table_code(fina_indicators)
 
 
