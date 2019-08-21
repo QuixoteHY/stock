@@ -88,13 +88,13 @@ def calculate_shareholder_equity_rate(balancesheet):
     return total_hldr_eqy_inc_min_int/total_assets
 
 
-def calculate_total_debt_shareholders_equity_rate(balancesheet):
-    # 总资产/负债及股东权益总计*100%
-    total_assets = float(balancesheet['total_assets'] if balancesheet['total_assets'] else 0)
-    total_liab_hldr_eqy = float(balancesheet['total_liab_hldr_eqy'] if balancesheet['total_liab_hldr_eqy'] else 0)
-    if not total_liab_hldr_eqy:
-        return 0
-    return total_assets/total_liab_hldr_eqy
+# def calculate_total_debt_shareholders_equity_rate(balancesheet):
+#     # 总资产/负债及股东权益总计*100%
+#     total_assets = float(balancesheet['total_assets'] if balancesheet['total_assets'] else 0)
+#     total_liab_hldr_eqy = float(balancesheet['total_liab_hldr_eqy'] if balancesheet['total_liab_hldr_eqy'] else 0)
+#     if not total_liab_hldr_eqy:
+#         return 0
+#     return total_assets/total_liab_hldr_eqy
 
 
 def calculate_debt_to_asset_rate(balancesheet):
@@ -301,7 +301,9 @@ def get_fina_indicator():
 def calculate(ts_code):
     fina_indicators = copy.deepcopy(fina_indicators_dict)
     mongodb_fi = Utils.get_conn_fi()
-    financial_statements = mongodb_fi.find_one({'_id': ts_code})['financial_statements']
+    stock_info = mongodb_fi.find_one({'_id': ts_code})
+    financial_statements = stock_info['financial_statements']
+    stock_basic = stock_info['stock_basic']
     for end_date, data in financial_statements.items():
         if not data['balance_sheet'] or not data['income'] or not data['cash_flow'] or not data['fifi']:
             continue
@@ -331,10 +333,6 @@ def calculate(ts_code):
         # 股东权益比率
         total_shareholder_equity_rate = calculate_shareholder_equity_rate(data['balance_sheet'])
         fina_indicators['股东权益比率'][end_date] = Utils.get_rate(total_shareholder_equity_rate)
-        # 资产负债表平衡
-        total_debt_shareholders_equity_rate = calculate_total_debt_shareholders_equity_rate(data['balance_sheet'])
-        fina_indicators['资产负债表平衡'][end_date] = \
-            Utils.get_rate(total_debt_shareholders_equity_rate)
         # 五大财务比率
         # 五大财务比率--财务结构
         # 负债占资产比率
@@ -404,7 +402,7 @@ def calculate(ts_code):
         # 筹资活动现金流量(百万元)
         finance_cash_flow = calculate_finance_cash_flow(data['cash_flow'])
         fina_indicators['筹资活动现金流量(百万元)'][end_date] = Utils.get_round(finance_cash_flow)
-    return get_html_table_code(fina_indicators)
+    return get_html_table_code(fina_indicators, stock_basic)
 
 
 if __name__ == '__main__':

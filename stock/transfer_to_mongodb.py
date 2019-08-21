@@ -14,7 +14,8 @@ from common.utils import Utils
 data = list()
 
 
-def transfer_to_mongodb(ts_code):
+def transfer_to_mongodb(stock_basic):
+    ts_code = stock_basic['ts_code']
     bs_file = data_path + '/balancesheet/balancesheet_20190630_%s.csv' % ts_code
     ic_file = data_path + '/income/income_20190630_%s.csv' % ts_code
     cf_file = data_path + '/cashflow/cashflow_20190630_%s.csv' % ts_code
@@ -57,7 +58,7 @@ def transfer_to_mongodb(ts_code):
                                                          'cash_flow': dict(), 'fifi': dict(), }
             financial_statements[row['end_date']]['fifi'] = row
     print({'_id': ts_code, 'financial_statements': financial_statements})
-    data.append({'_id': ts_code, 'financial_statements': financial_statements})
+    data.append({'_id': ts_code, 'financial_statements': financial_statements, 'stock_basic': stock_basic})
 
 
 def run():
@@ -70,7 +71,7 @@ def run():
         for row in reader:
             count += 1
             try:
-                transfer_to_mongodb(row['ts_code'])
+                transfer_to_mongodb(row)
                 print(str(count)+'\t', row['ts_code'], row['fullname'], '\t\t\t\t\t\t成功')
             except Exception as e:
                 print(e)
