@@ -20,5 +20,5 @@ class Utils(object):
         conn = MongoClient("localhost")
         db = conn.stock
         set1 = db.fi
-        set1.remove(None)
+        # set1.remove(None)
         return set1

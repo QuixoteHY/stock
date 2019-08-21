@@ -259,44 +259,11 @@ def get_fina_indicator():
 
 def calculate(ts_code):
     fina_indicators = copy.deepcopy(fina_indicators_dict)
-    bs_file = data_path + '/balancesheet/balancesheet_20190630_%s.csv' % ts_code
-    ic_file = data_path + '/income/income_20190630_%s.csv' % ts_code
-    cf_file = data_path + '/cashflow/cashflow_20190630_%s.csv' % ts_code
-    fi_file = data_path + '/fina_indicator/fina_indicator_20190630_%s.csv' % ts_code
-    financial_statements = dict()
-    with open(bs_file, newline='', encoding='UTF-8') as bsf:
-        # 资产负债表
-        bs_reader = csv.DictReader(bsf)
-        for row in bs_reader:
-            if row['end_date'] not in financial_statements:
-                financial_statements[row['end_date']] = {'balance_sheet': dict(), 'income': dict(),
-                                                         'cash_flow': dict(), 'fifi': dict(), }
-            financial_statements[row['end_date']]['balance_sheet'] = row
-    with open(ic_file, newline='', encoding='UTF-8') as icf:
-        # 利润表
-        ic_reader = csv.DictReader(icf)
-        for row in ic_reader:
-            if row['end_date'] not in financial_statements:
-                financial_statements[row['end_date']] = {'balance_sheet': dict(), 'income': dict(),
-                                                         'cash_flow': dict(), 'fifi': dict(), }
-            financial_statements[row['end_date']]['income'] = row
-    with open(cf_file, newline='', encoding='UTF-8') as cff:
-        # 现金流量表
-        cf_reader = csv.DictReader(cff)
-        for row in cf_reader:
-            if row['end_date'] not in financial_statements:
-                financial_statements[row['end_date']] = {'balance_sheet': dict(), 'income': dict(),
-                                                         'cash_flow': dict(), 'fifi': dict(), }
-            financial_statements[row['end_date']]['cash_flow'] = row
-    with open(fi_file, newline='', encoding='UTF-8') as fif:
-        # 财务指标
-        fi_reader = csv.DictReader(fif)
-        for row in fi_reader:
-            if row['end_date'] not in financial_statements:
-                financial_statements[row['end_date']] = {'balance_sheet': dict(), 'income': dict(),
-                                                         'cash_flow': dict(), 'fifi': dict(), }
-            financial_statements[row['end_date']]['fifi'] = row
+    mongodb_fi = Utils.get_conn_fi()
+    financial_statements = mongodb_fi.find_one({'_id': ts_code})['financial_statements']
     for end_date, data in financial_statements.items():
+        if not data['balance_sheet'] or not data['income'] or not data['cash_flow'] or not data['fifi']:
+            continue
         # 资产负债表
         # 资产负债比率(占总资产%)
         # 现金与约当现金比率
