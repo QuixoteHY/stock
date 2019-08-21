@@ -15,7 +15,7 @@ from common.data_model import cash_flow
 
 def get_table_html(fina_indicators, category_name, category_list):
     html = """
-<table class="fina_indicators" border="8" style="font-size:13px">
+<table class="fina_indicators" border="4" style="font-size:13px">
     <caption style="color:blue;font-weight:bold;font-size:15px"><i>%s</i></caption>
     %s
 </table>
