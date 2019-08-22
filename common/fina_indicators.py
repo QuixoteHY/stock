@@ -3,7 +3,7 @@
 # @Author   : 胡远
 # @Github   : https://github.com/QuixoteHY
 # @Email    : 1290482442@qq.com
-# @Describe : Calculating financial indicators
+# @Describe :
 
 from common.data_model import asset_liability_rate
 from common.data_model import financial_structure
