@@ -10,7 +10,7 @@ import copy
 from common.constant import data_path
 from common.tushare_api import pro
 from common.utils import Utils
-from common.template.fina_indicators import get_html_table_code
+from common.fina_indicators import get_html_table_code
 from common.data_model import fina_indicators_dict
 
 
