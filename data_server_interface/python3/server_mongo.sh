@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+cd /home/ubuntu/myprogram/mondodb/mongodb
 export PATH=/home/ubuntu/myprogram/mondodb/mongodb/bin:$PATH
 
 log_file_path=/home/ubuntu/myproject/stock/data_server_interface/python3/server_mongo.log
