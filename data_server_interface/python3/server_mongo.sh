@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-cd `dirname $0`
+cd /home/ubuntu/myprogram/mondodb/mongodb
 
 log_file_path=/home/ubuntu/myproject/stock/data_server_interface/python3/server_mongo.log
 
