@@ -14,7 +14,7 @@ from common.utils import Utils
 data = list()
 
 
-def transfer_to_mongodb(stock_basic):
+def transfer_to_mongodb(stock_basic, mongodb_fi):
     ts_code = stock_basic['ts_code']
     bs_file = data_path + '/balancesheet/balancesheet_20190630_%s.csv' % ts_code
     ic_file = data_path + '/income/income_20190630_%s.csv' % ts_code
@@ -58,7 +58,8 @@ def transfer_to_mongodb(stock_basic):
                                                          'cash_flow': dict(), 'fifi': dict(), }
             financial_statements[row['end_date']]['fifi'] = row
     # print({'_id': ts_code, 'financial_statements': financial_statements})
-    data.append({'_id': ts_code, 'financial_statements': financial_statements, 'stock_basic': stock_basic})
+    # data.append({'_id': ts_code, 'financial_statements': financial_statements, 'stock_basic': stock_basic})
+    mongodb_fi.insert({'_id': ts_code, 'financial_statements': financial_statements, 'stock_basic': stock_basic})
 
 
 def run():
@@ -71,7 +72,7 @@ def run():
         for row in reader:
             count += 1
             try:
-                transfer_to_mongodb(row)
+                transfer_to_mongodb(row, mongodb_fi)
                 print(str(count)+'\t', row['ts_code'], row['fullname'], '\t\t\t\t\t\t成功')
             except Exception as e:
                 print(e)
@@ -79,11 +80,6 @@ def run():
                 with open(data_path + '/err_log/err_income_' + date_str + '.log', 'a') as f:
                     f.write(row['ts_code']+'\n')
     # mongodb_fi.insert(data)
-    count = 0
-    for c in data:
-        count += 1
-        print(count)
-        mongodb_fi.insert(c)
 
 
 if __name__ == '__main__':
