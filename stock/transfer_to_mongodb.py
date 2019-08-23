@@ -57,7 +57,7 @@ def transfer_to_mongodb(stock_basic):
                 financial_statements[row['end_date']] = {'balance_sheet': dict(), 'income': dict(),
                                                          'cash_flow': dict(), 'fifi': dict(), }
             financial_statements[row['end_date']]['fifi'] = row
-    print({'_id': ts_code, 'financial_statements': financial_statements})
+    # print({'_id': ts_code, 'financial_statements': financial_statements})
     data.append({'_id': ts_code, 'financial_statements': financial_statements, 'stock_basic': stock_basic})
 
 
@@ -78,7 +78,12 @@ def run():
                 print(str(count)+'\t', row['ts_code'], '\t\t失败')
                 with open(data_path + '/err_log/err_income_' + date_str + '.log', 'a') as f:
                     f.write(row['ts_code']+'\n')
-    mongodb_fi.insert(data)
+    # mongodb_fi.insert(data)
+    count = 0
+    for c in data:
+        count += 1
+        print(count)
+        mongodb_fi.insert(c)
 
 
 if __name__ == '__main__':
