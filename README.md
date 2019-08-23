@@ -8,3 +8,4 @@
 使用：http://119.29.152.194:8888/get/stock/fina_indicators/ + A股股票代码
 例子：http://119.29.152.194:8888/get/stock/fina_indicators/600699
 
+export PYTHONPATH=/home/ubuntu/myproject/stock:$PYTHONPATH

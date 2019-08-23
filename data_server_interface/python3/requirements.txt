@@ -1,2 +1,7 @@
 aiohttp
 requests
+tushare
+pandas
+simplejson
+bs4
+pymongo
