@@ -1,0 +1,12 @@
+__pycache__
+*.pyc
+.idea/
+logs/
+test.py
+.DS_Store
+test/
+main.py
+.*
+node_modules
+package-lock.json
+.log
