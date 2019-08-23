@@ -9,4 +9,4 @@ main.py
 .*
 node_modules
 package-lock.json
-.log
+*.log
